@@ -153,6 +153,14 @@ type JobHandle interface {
 	Info() (info []string)
 }
 
+type FileInodeLeaseStateType uint32
+
+const (
+	FileInodeLeaseStateNone FileInodeLeaseStateType = iota
+	FileInodeLeaseStateShared
+	FileInodeLeaseStateExclusive
+)
+
 // Mount handle interface
 
 func MountByAccountName(accountName string, mountOptions MountOptions) (mountHandle MountHandle, err error) {
@@ -179,6 +187,8 @@ type MountHandle interface {
 	IsDir(userID inode.InodeUserID, groupID inode.InodeGroupID, otherGroupIDs []inode.InodeGroupID, inodeNumber inode.InodeNumber) (inodeIsDir bool, err error)
 	IsFile(userID inode.InodeUserID, groupID inode.InodeGroupID, otherGroupIDs []inode.InodeGroupID, inodeNumber inode.InodeNumber) (inodeIsFile bool, err error)
 	IsSymlink(userID inode.InodeUserID, groupID inode.InodeGroupID, otherGroupIDs []inode.InodeGroupID, inodeNumber inode.InodeNumber) (inodeIsSymlink bool, err error)
+	LeaseKeepAlive() (inodeNumber inode.InodeNumber, requestedState FileInodeLeaseStateType, err error)
+	LeaseState(inodeNumber inode.InodeNumber, requestedState FileInodeLeaseStateType) (grantedState FileInodeLeaseStateType, err error)
 	Link(userID inode.InodeUserID, groupID inode.InodeGroupID, otherGroupIDs []inode.InodeGroupID, dirInodeNumber inode.InodeNumber, basename string, targetInodeNumber inode.InodeNumber) (err error)
 	ListXAttr(userID inode.InodeUserID, groupID inode.InodeGroupID, otherGroupIDs []inode.InodeGroupID, inodeNumber inode.InodeNumber) (streamNames []string, err error)
 	Lookup(userID inode.InodeUserID, groupID inode.InodeGroupID, otherGroupIDs []inode.InodeGroupID, dirInodeNumber inode.InodeNumber, basename string) (inodeNumber inode.InodeNumber, err error)

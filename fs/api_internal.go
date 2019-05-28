@@ -1175,6 +1175,18 @@ func (mS *mountStruct) IsSymlink(userID inode.InodeUserID, groupID inode.InodeGr
 	return inodeType == inode.SymlinkType, nil
 }
 
+func (mS *mountStruct) LeaseKeepAlive() (inodeNumber inode.InodeNumber, requestedState FileInodeLeaseStateType, err error) {
+	fmt.Println("UNDO: got to fs.LeaseKeepAlive()")
+	// err = blunder.NewError(blunder.NotSupportedError, "ENOTSUP")
+	err = blunder.NewError(blunder.NotFoundError, "ENOENT")
+	return
+}
+
+func (mS *mountStruct) LeaseState(inodeNumber inode.InodeNumber, requestedState FileInodeLeaseStateType) (grantedState FileInodeLeaseStateType, err error) {
+	err = blunder.NewError(blunder.NotSupportedError, "ENOTSUP")
+	return
+}
+
 func (mS *mountStruct) Link(userID inode.InodeUserID, groupID inode.InodeGroupID, otherGroupIDs []inode.InodeGroupID, dirInodeNumber inode.InodeNumber, basename string, targetInodeNumber inode.InodeNumber) (err error) {
 	startTime := time.Now()
 	defer func() {

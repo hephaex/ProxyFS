@@ -21,10 +21,9 @@ func doMountProxyFS() {
 	)
 
 	mountRequest = &jrpcfs.MountByAccountNameRequest{
-		AccountName:  globals.config.SwiftAccountName,
-		MountOptions: 0,
-		AuthUserID:   0,
-		AuthGroupID:  0,
+		AccountName: globals.config.SwiftAccountName,
+		AuthUserID:  0,
+		AuthGroupID: 0,
 	}
 
 	if globals.config.ReadOnly {

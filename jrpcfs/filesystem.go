@@ -2160,3 +2160,35 @@ func (s *Server) RpcSnapShotLookupByName(in *SnapShotLookupByNameRequest, reply 
 
 	return
 }
+
+func (s *Server) RpcLeaseKeepAlive(in *LeaseKeepAliveRequest, reply *LeaseKeepAliveReply) (err error) {
+	var (
+		fsMountHandle fs.MountHandle
+		inodeNumber   inode.InodeNumber
+	)
+
+	fsMountHandle, err = lookupMountHandleByMountIDAsString(in.MountID)
+	if nil != err {
+		return
+	}
+
+	inodeNumber, reply.RequestedState, err = fsMountHandle.LeaseKeepAlive()
+	reply.InodeNumber = int64(inodeNumber)
+
+	return
+}
+
+func (s *Server) RpcLeaseState(in *LeaseStateRequest, reply *LeaseStateReply) (err error) {
+	var (
+		fsMountHandle fs.MountHandle
+	)
+
+	fsMountHandle, err = lookupMountHandleByMountIDAsString(in.MountID)
+	if nil != err {
+		return
+	}
+
+	reply.GrantedState, err = fsMountHandle.LeaseState(inode.InodeNumber(in.InodeNumber), in.RequestedState)
+
+	return
+}

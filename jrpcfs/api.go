@@ -676,7 +676,7 @@ type GetObjectReply struct {
 	Metadata         []byte // serialized object metadata (previously set by middleware empty if absent)
 	ModificationTime uint64 // file's mtime in nanoseconds since the epoch
 	AttrChangeTime   uint64
-	LeaseId          string
+	LeaseId          string // TODO: Obsolete
 }
 
 // GetObjectReq is the request object for RpcGetObject
@@ -815,15 +815,15 @@ type WroteRequest struct {
 type WroteReply struct {
 }
 
-type RenewLeaseReq struct {
+type RenewLeaseReq struct { // TODO: Obsolete
 	LeaseId string
 }
-type RenewLeaseReply struct{}
+type RenewLeaseReply struct{} // TODO: Obsolete
 
-type ReleaseLeaseReq struct {
+type ReleaseLeaseReq struct { // TODO: Obsolete
 	LeaseId string
 }
-type ReleaseLeaseReply struct{}
+type ReleaseLeaseReply struct{} // TODO: Obsolete
 
 // SnapShotCreateRequest is the request object for RpcSnapShotCreate
 type SnapShotCreateRequest struct {
@@ -865,4 +865,50 @@ type SnapShotLookupByNameRequest struct {
 // SnapShotLookupByNameReply is the reply object for RpcSnapShotLookupByName
 type SnapShotLookupByNameReply struct {
 	SnapShot headhunter.SnapShotStruct
+}
+
+// LeaseKeepAliveRequest is the request object for RpcLeaseKeepAlive
+//
+// Note that the peer must promptly keep this request active. If it does not,
+// the proxyfsd instance will presume this peer has died and all held leases
+// are now free'd.
+type LeaseKeepAliveRequest struct {
+	MountID MountIDAsString
+}
+
+// LeaseKeepAliveReply is the reply object for RpcLeaseKeepAlive
+//
+// A successful reply may be due to normal keep alive time (InodeNumber == 0)
+// or when the proxyfsd instance is requesting this peer to request a change of
+// lease state to a new RequestedState (i.e. via a new LeaseStateRequest) for
+// this InodeNumber. The peer is may choose to release the lease entirely
+// (fs.FileInodeLeaseStateNone) if it chooses.
+//
+// A failure indicates that the proxyfsd instance either doesn't recognize the
+// MountID or has otherwise assumed this peer had died and taken away all held
+// leases.
+//
+// A timed out request should be assumed to mean the proxyfsd instance has
+// failed... and the peer should also assume it has implicitly released all
+// of its leases.
+type LeaseKeepAliveReply struct {
+	InodeNumber    int64
+	RequestedState fs.FileInodeLeaseStateType
+}
+
+// LeaseStateRequest is the request object for RpcLeaseState
+//
+// Note that regardless of what state is requested, any state may be returned
+// in LeaseStateReply e.g. a request to "promote" from fs.FileInodeLeaseStateShared
+// to fs.FileInodeLeaseStateExclusive may be issued by two peers simultaneously
+// resulting in one of them being told to "demote" to fs.FileInodeLeaseStateNone)
+// to avoid a deadlock.
+type LeaseStateRequest struct {
+	InodeHandle
+	RequestedState fs.FileInodeLeaseStateType
+}
+
+// LeaseStateReply is the reply object for RpcLeaseState
+type LeaseStateReply struct {
+	GrantedState fs.FileInodeLeaseStateType
 }
