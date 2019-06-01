@@ -259,7 +259,7 @@ func doMount() {
 		log.Fatalf("Got unexpected MessageID in httpResponseBody [Case 1]")
 	}
 	if "" != jrpcResponseIDAndError.Error {
-		log.Fatalf("Got JRPC Failure on PROXYFS Mount: %v", err)
+		log.Fatalf("Got JRPC Failure on PROXYFS Mount: %s", jrpcResponseIDAndError.Error)
 	}
 
 	mountReply = &jrpcfs.MountByAccountNameReply{}
@@ -379,7 +379,7 @@ func doJRPC(s ...string) {
 		log.Fatalf("Got unexpected MessageID in httpResponseBody [Case 2]")
 	}
 	if "" != jrpcResponseIDAndError.Error {
-		log.Fatalf("Got JRPC Failure: %v", err)
+		log.Fatalf("Got JRPC Failure: %s", jrpcResponseIDAndError.Error)
 	}
 }
 
