@@ -36,6 +36,7 @@ type mountStruct struct {
 type leaseStruct struct {
 	inode.InodeNumber
 	MountID
+	// TODO: What about pending vs granted and FIFO queuing?
 }
 
 type volumeStruct struct {
