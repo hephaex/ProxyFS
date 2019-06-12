@@ -1176,11 +1176,13 @@ func (mS *mountStruct) IsSymlink(userID inode.InodeUserID, groupID inode.InodeGr
 }
 
 func (mS *mountStruct) LeaseKeepAlive() (inodeNumber inode.InodeNumber, requestedState FileInodeLeaseStateType, err error) {
+	logger.Infof("UNDO: in fs.LeaseKeepAlive()")
 	err = blunder.NewError(blunder.NotSupportedError, "ENOTSUP")
 	return
 }
 
 func (mS *mountStruct) LeaseState(inodeNumber inode.InodeNumber, requestedState FileInodeLeaseStateType) (grantedState FileInodeLeaseStateType, err error) {
+	logger.Infof("UNDO: in fs.LeaseState()")
 	err = blunder.NewError(blunder.NotSupportedError, "ENOTSUP")
 	return
 }

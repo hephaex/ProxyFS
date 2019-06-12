@@ -33,6 +33,11 @@ type mountStruct struct {
 	volStruct *volumeStruct
 }
 
+type leaseStruct struct {
+	inode.InodeNumber
+	MountID
+}
+
 type volumeStruct struct {
 	dataMutex                trackedlock.Mutex
 	volumeName               string
@@ -47,6 +52,8 @@ type volumeStruct struct {
 	FLockMap                 map[inode.InodeNumber]*list.List
 	inFlightFileInodeDataMap map[inode.InodeNumber]*inFlightFileInodeDataStruct
 	mountList                []MountID
+	leaseMapByInodeNumber    map[inode.InodeNumber]*leaseStruct
+	leaseMapByMountID        map[MountID]*leaseStruct
 	jobRWMutex               trackedlock.RWMutex
 	inodeVolumeHandle        inode.VolumeHandle
 	headhunterVolumeHandle   headhunter.VolumeHandle
@@ -256,6 +263,8 @@ func (dummy *globalsStruct) ServeVolume(confMap conf.ConfMap, volumeName string)
 		FLockMap:                 make(map[inode.InodeNumber]*list.List),
 		inFlightFileInodeDataMap: make(map[inode.InodeNumber]*inFlightFileInodeDataStruct),
 		mountList:                make([]MountID, 0),
+		leaseMapByInodeNumber:    make(map[inode.InodeNumber]*leaseStruct),
+		leaseMapByMountID:        make(map[MountID]*leaseStruct),
 	}
 
 	volumeSectionName = "Volume:" + volumeName
@@ -316,9 +325,9 @@ func (dummy *globalsStruct) ServeVolume(confMap conf.ConfMap, volumeName string)
 
 func (dummy *globalsStruct) UnserveVolume(confMap conf.ConfMap, volumeName string) (err error) {
 	var (
-		id     MountID
-		ok     bool
-		volume *volumeStruct
+		mountID MountID
+		ok      bool
+		volume  *volumeStruct
 	)
 
 	volume, ok = globals.volumeMap[volumeName]
@@ -328,8 +337,8 @@ func (dummy *globalsStruct) UnserveVolume(confMap conf.ConfMap, volumeName strin
 		return
 	}
 
-	for _, id = range volume.mountList {
-		delete(globals.mountMap, id)
+	for _, mountID = range volume.mountList {
+		delete(globals.mountMap, mountID)
 	}
 
 	volume.untrackInFlightFileInodeDataAll()
