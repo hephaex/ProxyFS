@@ -31,12 +31,18 @@ type mountStruct struct {
 	id        MountID
 	options   MountOptions
 	volStruct *volumeStruct
+	leaseMap  map[inode.InodeNumber]*leaseStruct
+}
+
+type leasesStruct struct {
+	inode.InodeNumber // == Key in volumeStruct.leaseMapByInodeNumber
 }
 
 type leaseStruct struct {
-	inode.InodeNumber
-	MountID
-	// TODO: What about pending vs granted and FIFO queuing?
+	inode.InodeNumber                         // == Key in mountStruct.leaseMap
+	requestedState    FileInodeLeaseStateType // Should never be FileInodeLeaseStateNone since that will be immediately granted
+	grantedState      FileInodeLeaseStateType
+	leases            *leasesStruct // Convenience field since leasesStruct is findable via volumeStruct.leaseMap
 }
 
 type volumeStruct struct {
@@ -53,8 +59,7 @@ type volumeStruct struct {
 	FLockMap                 map[inode.InodeNumber]*list.List
 	inFlightFileInodeDataMap map[inode.InodeNumber]*inFlightFileInodeDataStruct
 	mountList                []MountID
-	leaseMapByInodeNumber    map[inode.InodeNumber]*leaseStruct
-	leaseMapByMountID        map[MountID]*leaseStruct
+	leasesMap                map[inode.InodeNumber]*leasesStruct
 	jobRWMutex               trackedlock.RWMutex
 	inodeVolumeHandle        inode.VolumeHandle
 	headhunterVolumeHandle   headhunter.VolumeHandle
@@ -264,8 +269,7 @@ func (dummy *globalsStruct) ServeVolume(confMap conf.ConfMap, volumeName string)
 		FLockMap:                 make(map[inode.InodeNumber]*list.List),
 		inFlightFileInodeDataMap: make(map[inode.InodeNumber]*inFlightFileInodeDataStruct),
 		mountList:                make([]MountID, 0),
-		leaseMapByInodeNumber:    make(map[inode.InodeNumber]*leaseStruct),
-		leaseMapByMountID:        make(map[MountID]*leaseStruct),
+		leasesMap:                make(map[inode.InodeNumbver]*leasesStruct),
 	}
 
 	volumeSectionName = "Volume:" + volumeName
