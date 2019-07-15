@@ -78,6 +78,9 @@ func main() {
 	if nil != err {
 		log.Fatalf("Failed to parse %s value for JRPCTool.AuthURL: %v", confFilePath, err)
 	}
+	if !strings.HasPrefix(strings.ToLower(authURL), "http:") && !strings.HasPrefix(strings.ToLower(authURL), "https:") {
+		log.Fatalf("JRPCTool.AuthURL (\"%s\") must start with either \"http:\" or \"https:\", authURL", authURL)
+	}
 	authUser, err = confMap.FetchOptionValueString("JRPCTool", "AuthUser")
 	if nil != err {
 		log.Fatalf("Failed to parse %s value for JRPCTool.AuthUser: %v", confFilePath, err)
@@ -154,6 +157,16 @@ func doAuth() {
 		fmt.Printf("Auth Response:\n")
 		fmt.Printf("  env.AuthToken:  %s\n", env.AuthToken)
 		fmt.Printf("  env.StorageURL: %s\n", env.StorageURL)
+	}
+
+	if strings.HasPrefix(env.StorageURL, "http:") && strings.HasPrefix(httpRequest.URL.String(), "https:") {
+		env.StorageURL = strings.Replace(env.StorageURL, "http:", "https:", 1)
+
+		if verbose {
+			fmt.Printf("Auth Response (proxy-corrected):\n")
+			fmt.Printf("  env.AuthToken:  %s\n", env.AuthToken)
+			fmt.Printf("  env.StorageURL: %s\n", env.StorageURL)
+		}
 	}
 
 	writeEnv()

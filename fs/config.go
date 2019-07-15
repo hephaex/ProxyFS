@@ -269,7 +269,7 @@ func (dummy *globalsStruct) ServeVolume(confMap conf.ConfMap, volumeName string)
 		FLockMap:                 make(map[inode.InodeNumber]*list.List),
 		inFlightFileInodeDataMap: make(map[inode.InodeNumber]*inFlightFileInodeDataStruct),
 		mountList:                make([]MountID, 0),
-		leasesMap:                make(map[inode.InodeNumbver]*leasesStruct),
+		leasesMap:                make(map[inode.InodeNumber]*leasesStruct),
 	}
 
 	volumeSectionName = "Volume:" + volumeName
