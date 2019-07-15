@@ -79,7 +79,7 @@ func main() {
 		log.Fatalf("Failed to parse %s value for JRPCTool.AuthURL: %v", confFilePath, err)
 	}
 	if !strings.HasPrefix(strings.ToLower(authURL), "http:") && !strings.HasPrefix(strings.ToLower(authURL), "https:") {
-		log.Fatalf("JRPCTool.AuthURL (\"%s\") must start with either \"http:\" or \"https:\", authURL", authURL)
+		log.Fatalf("JRPCTool.AuthURL (\"%s\") must start with either \"http:\" or \"https:\"", authURL)
 	}
 	authUser, err = confMap.FetchOptionValueString("JRPCTool", "AuthUser")
 	if nil != err {
