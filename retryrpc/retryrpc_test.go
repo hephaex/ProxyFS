@@ -14,7 +14,7 @@ import (
 // circular dependency if the test was in retryrpc.
 func TestRetryRPC(t *testing.T) {
 
-	//	testServer(t)
+	testServer(t)
 	testBtree(t)
 }
 
@@ -46,7 +46,8 @@ func getNewServer() (rrSvr *Server, ip string, p int) {
 	)
 
 	// Create a new RetryRPC Server.  Completed request will live on
-	// completedRequests for 10 seconds.
+	// completedRequests for 10 seconds and known completed requests
+	// will be trimmed after 100ms
 	rrSvr = NewServer(10*time.Second, 100*time.Millisecond, ipaddr, port)
 	ip = ipaddr
 	p = port

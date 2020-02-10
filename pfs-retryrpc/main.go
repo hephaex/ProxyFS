@@ -152,7 +152,6 @@ func main() {
 	}
 
 	sendCnt := 100
-	// agentCnt := 100
-	agentCnt := 1
+	agentCnt := 100
 	parallelAgentSenders(ipAddr, retryRPCPortString, agentCnt, sendCnt)
 }
