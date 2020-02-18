@@ -165,13 +165,12 @@ func (server *Server) CloseClientConn() {
 	if server == nil {
 		return
 	}
-	logger.Infof("CloseClientConn() called --------")
-	server.Lock()
+	server.connLock.Lock()
 	for c := server.connections.Front(); c != nil; c = c.Next() {
 		conn := c.Value.(net.Conn)
 		conn.Close()
 	}
-	server.Unlock()
+	server.connLock.Unlock()
 }
 
 // CompletedCnt returns count of pendingRequests
@@ -204,6 +203,8 @@ const (
 	DISCONNECTED
 	// CONNECTED means the Client is connected to the server
 	CONNECTED
+	// CLOSING means the Client is closing connection to server
+	CLOSING
 )
 
 type connectionTracker struct {
@@ -274,13 +275,18 @@ func (client *Client) Close() {
 	// Set halting flag and then close our socket to server.
 	// This will cause the blocked getIO() in readReplies() to return.
 	client.Lock()
+	fmt.Printf("CLIENT CLOSE CALLED=========== connection.state: %v\n", client.connection.state)
 	client.halting = true
 	if client.connection.state == CONNECTED {
-		client.connection.state = INITIAL
+		client.connection.state = CLOSING
 		client.connection.tlsConn.Close()
 	}
 	client.Unlock()
 
 	// Wait for the goroutines to return
 	client.goroutineWG.Wait()
+
+	client.Lock()
+	client.connection.state = INITIAL
+	client.Unlock()
 }

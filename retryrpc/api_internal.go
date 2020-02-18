@@ -188,6 +188,12 @@ func getIO(conn net.Conn) (buf []byte, err error) {
 		return
 	}
 
+	if hdr.Len == 0 {
+		err = fmt.Errorf("hdr.Len == 0")
+		fmt.Printf("hdr ===========is: %v\n", hdr)
+		return
+	}
+
 	// Now read the rest of the structure off the wire.
 	var numBytes int
 	buf = make([]byte, hdr.Len)
@@ -200,6 +206,7 @@ func getIO(conn net.Conn) (buf []byte, err error) {
 		err = fmt.Errorf("Incomplete read of body")
 		return
 	}
+	// fmt.Printf("hdr: %v buf: %v\n", hdr, string(buf))
 
 	return
 }

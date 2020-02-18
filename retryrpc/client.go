@@ -30,10 +30,14 @@ func (client *Client) send(method string, rpcRequest interface{}, rpcReply inter
 	client.Lock()
 	if client.connection.state == INITIAL {
 
-		// TODO - should this keep retrying the dial?
-		err = client.dial()
-		if err != nil {
-			return
+		for {
+			err = client.dial()
+			if err == nil {
+				break
+			}
+			client.Unlock()
+			time.Sleep(100 * time.Millisecond)
+			client.Lock()
 		}
 	}
 
@@ -58,6 +62,7 @@ func (client *Client) send(method string, rpcRequest interface{}, rpcReply inter
 	if err != nil {
 		e := fmt.Errorf("Client buildIoRequest returned err: %v", err)
 		logger.PanicfWithError(e, "")
+		client.Unlock()
 		return err
 	}
 
@@ -137,13 +142,6 @@ func (client *Client) sendToServer(crID requestID, ctx *reqCtx) {
 	return
 }
 
-// Wakeup the blocked send by writing err back on channel
-func sendReply(ctx *reqCtx, err error) {
-
-	r := replyCtx{err: err}
-	ctx.answer <- r
-}
-
 func (client *Client) notifyReply(buf []byte, genNum uint64) {
 	defer client.goroutineWG.Done()
 
@@ -190,6 +188,10 @@ func (client *Client) notifyReply(buf []byte, genNum uint64) {
 		return
 	}
 
+	if string(buf) == "" {
+		fmt.Printf("Buf is: %v\n", buf)
+	}
+
 	delete(client.outstandingRequest, crID)
 	client.Unlock()
 
@@ -221,6 +223,9 @@ func (client *Client) readReplies() {
 
 		// Wait reply from server
 		buf, getErr := getIO(tlsConn)
+		if string(buf) == "" {
+			fmt.Printf("getIO() return buf: %v getErr: %v\n", buf, getErr)
+		}
 
 		// This must happen before checking error
 		if client.halting {
@@ -239,6 +244,9 @@ func (client *Client) readReplies() {
 		// sending the reply to blocked Send() so that this routine
 		// can read the next response.
 		client.goroutineWG.Add(1)
+		if string(buf) == "" {
+			fmt.Printf("calling notifyReply after ---- getIO() return buf: %v getErr: %v\n", buf, getErr)
+		}
 		go client.notifyReply(buf, genNum)
 	}
 }
@@ -251,6 +259,12 @@ func (client *Client) retransmit(genNum uint64) {
 	// Check if we are already processing the socket closing via
 	// another goroutine.
 	if genNum < client.connection.genNum {
+		client.Unlock()
+		return
+	}
+
+	// If client is closing then no point recovering
+	if client.connection.state == CLOSING {
 		client.Unlock()
 		return
 	}
@@ -272,8 +286,6 @@ func (client *Client) retransmit(genNum uint64) {
 			time.Sleep(100 * time.Millisecond)
 			client.Lock()
 		}
-
-		client.connection.state = CONNECTED
 
 		for crID, ctx := range client.outstandingRequest {
 			// Note that we are holding the lock so these

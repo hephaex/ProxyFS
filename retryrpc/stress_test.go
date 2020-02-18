@@ -17,8 +17,9 @@ func TestStress(t *testing.T) {
 
 func testLoop(t *testing.T) {
 	var (
-		agentCount = 100
-		sendCount  = 100
+		//agentCount = 10
+		agentCount = 1
+		sendCount  = 15
 	)
 	assert := assert.New(t)
 	zero := 0
@@ -44,10 +45,10 @@ func testLoop(t *testing.T) {
 	rrSvr.Run()
 
 	// Start up the agents
-	parallelAgentSenders(t, ipAddr, port, agentCount, sendCount, rrSvr.Creds.RootCAx509CertificatePEM)
+	parallelAgentSenders(t, rrSvr, ipAddr, port, agentCount, sendCount, rrSvr.Creds.RootCAx509CertificatePEM)
 }
 
-func sendIt(t *testing.T, client *Client, i int, sendWg *sync.WaitGroup) {
+func sendIt(t *testing.T, client *Client, i int, sendWg *sync.WaitGroup, agentID uint64) {
 	assert := assert.New(t)
 	defer sendWg.Done()
 
@@ -56,20 +57,23 @@ func sendIt(t *testing.T, client *Client, i int, sendWg *sync.WaitGroup) {
 	pingRequest := &rpctest.PingReq{Message: msg}
 	pingReply := &rpctest.PingReply{}
 	expectedReply := fmt.Sprintf("pong %d bytes", len(msg))
+	fmt.Printf("sendIt() SENDING!!!! i: %v =====\n", i)
 	err := client.Send("RpcPing", pingRequest, pingReply)
 	assert.Nil(err, "client.Send() returned an error")
 	if expectedReply != pingReply.Message {
-		fmt.Printf("ERR ==== client: '%+v'\n", client)
+		//fmt.Printf("ERR ==== client: '%v'\n", client)
+		fmt.Printf("		 client - AGENTID: %v\n", agentID)
 		fmt.Printf("         client.Send(RpcPing) reply '%+v'\n", pingReply)
 		fmt.Printf("         client.Send(RpcPing) expected '%s' but received '%s'\n", expectedReply, pingReply.Message)
 		fmt.Printf("         client.Send(RpcPing) SENT: msg '%v' but received '%s'\n", msg, pingReply.Message)
 		fmt.Printf("         client.Send(RpcPing) len(pingRequest.Message): '%d' i: %v\n", len(pingRequest.Message), i)
 	}
 	assert.Equal(expectedReply, pingReply.Message, "Received different output then expected")
+	fmt.Printf("sendIt() i: %v =====\n", i)
 }
 
 // Represents a pfsagent - sepearate client
-func pfsagent(t *testing.T, ipAddr string, port int, agentID uint64, agentWg *sync.WaitGroup,
+func pfsagent(t *testing.T, rrSvr *Server, ipAddr string, port int, agentID uint64, agentWg *sync.WaitGroup,
 	sendCnt int, rootCAx509CertificatePEM []byte) {
 	defer agentWg.Done()
 
@@ -83,18 +87,27 @@ func pfsagent(t *testing.T, ipAddr string, port int, agentID uint64, agentWg *sy
 
 	var sendWg sync.WaitGroup
 
-	var z int
+	var z, r int
 	for i := 0; i < sendCnt; i++ {
 		z = (z + i) * 10
 
 		sendWg.Add(1)
-		go sendIt(t, client, z, &sendWg)
+		go sendIt(t, client, z, &sendWg, agentID)
+
+		// Occasionally drop the connection to the server to
+		// simulate retransmits
+		r = i % 10
+		if r == 0 && (i != 0) {
+			rrSvr.CloseClientConn()
+		}
 	}
+	fmt.Printf("pfsagent: %v sentCnt: %v - now wait=========\n", agentID, sendCnt)
 	sendWg.Wait()
+	fmt.Printf("pfsagent: %v COMPLETED agentWG\n", agentID)
 }
 
 // Start a bunch of "pfsagents" in parallel
-func parallelAgentSenders(t *testing.T, ipAddr string, port int, agentCnt int,
+func parallelAgentSenders(t *testing.T, rrSrv *Server, ipAddr string, port int, agentCnt int,
 	sendCnt int, rootCAx509CertificatePEM []byte) {
 
 	var agentWg sync.WaitGroup
@@ -109,7 +122,8 @@ func parallelAgentSenders(t *testing.T, ipAddr string, port int, agentCnt int,
 		agentID = clientSeed + uint64(i)
 
 		agentWg.Add(1)
-		go pfsagent(t, ipAddr, port, agentID, &agentWg, sendCnt, rootCAx509CertificatePEM)
+		go pfsagent(t, rrSrv, ipAddr, port, agentID, &agentWg, sendCnt, rootCAx509CertificatePEM)
 	}
 	agentWg.Wait()
+	fmt.Printf("parallelAgentSenders() - after agentWg.Wait()-----\n")
 }
