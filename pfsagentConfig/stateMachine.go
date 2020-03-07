@@ -13,7 +13,7 @@ func RunStateMachine() error {
 	prevMenuText := mainMenuText
 	prevMenuOptions := mainMenuOptions
 	prevMenuOptionsTexts := mainMenuOptionsTexts
-	for true {
+	for {
 		menuResponse, displayErr := nextMenu(nextMenuText, nextMenuOptions, nextMenuOptionsTexts)
 		// fmt.Printf("menuResponse: %v\n", menuResponse)
 		if nil != displayErr {
@@ -55,14 +55,12 @@ func RunStateMachine() error {
 					fmt.Printf(failureMessageHeader)
 					fmt.Printf(authURLFailedMessage, accessErr)
 					fmt.Printf(failureMessageFooter)
-					continue
 				case typeCredentails:
 					fmt.Printf(needMoreInfoMessageHeader)
 					fmt.Printf("Auth URL Works, But I Got An Error Trying To Login With Credentails\nUser: %v\nKey: %v\n%v\n\n", confMap["Agent"]["SwiftAuthUser"][0], confMap["Agent"]["SwiftAuthKey"][0], accessErr)
 					// MyConfig.SwiftAuthURL = userResponse
 					fmt.Printf("Swift Auth URL Set To %v\n", confMap["Agent"]["SwiftAuthURL"][0])
 					fmt.Printf(needMoreInfoMessageFooter)
-					continue
 				case typeAccount:
 					fmt.Printf(needMoreInfoMessageHeader)
 					fmt.Printf("Auth URL And Credentials Works, But I Could Not Gain Access To Account %v. Please Verify The Account Exists And User %v Has The Correct Access Permissions\n%v\n\n", confMap["Agent"]["SwiftAccountName"][0], confMap["Agent"]["SwiftAuthUser"][0], accessErr)
@@ -71,7 +69,6 @@ func RunStateMachine() error {
 					SaveCurrentConfig()
 					fmt.Println("Changes Saved To File")
 					fmt.Printf(needMoreInfoMessageFooter)
-					continue
 				}
 			} else {
 				fmt.Printf(successMessageHeader)
@@ -84,7 +81,6 @@ func RunStateMachine() error {
 				nextMenuText = mainMenuText
 				nextMenuOptions = mainMenuOptions
 				nextMenuOptionsTexts = mainMenuOptionsTexts
-				continue
 			}
 
 		case changeUsernameOptionText:
@@ -103,7 +99,6 @@ func RunStateMachine() error {
 					fmt.Printf(failureMessageHeader)
 					fmt.Printf("Auth URL Failed, So I Could Not Check Username. Please Verify Auth URL\n%v\n\n", accessErr)
 					fmt.Printf(failureMessageFooter)
-					continue
 				case typeCredentails:
 					// MyConfig.SwiftAuthUser = prevAuthUser
 					fmt.Printf("Swift User Set To %v\n", confMap["Agent"]["SwiftAuthUser"][0])
@@ -112,7 +107,6 @@ func RunStateMachine() error {
 					fmt.Printf(failureMessageHeader)
 					fmt.Printf("Auth URL Works, But I Got An Error Trying To Login With Credentails\nUser: %v\nKey: %v\n%v\n\n", userResponse, confMap["Agent"]["SwiftAuthKey"][0], accessErr)
 					fmt.Printf(failureMessageFooter)
-					continue
 				case typeAccount:
 					fmt.Printf(needMoreInfoMessageHeader)
 					fmt.Printf("Auth URL And Credentials Works, But I Could Not Gain Access To Account %v. Please Verify The Account Exists And User %v Has The Correct Access Permissions\n%v\n\n", confMap["Agent"]["SwiftAccountName"][0], confMap["Agent"]["SwiftAuthUser"][0], accessErr)
@@ -121,7 +115,6 @@ func RunStateMachine() error {
 					SaveCurrentConfig()
 					fmt.Println("Changes Saved To File")
 					fmt.Printf(needMoreInfoMessageFooter)
-					continue
 				}
 			} else {
 				fmt.Printf(successMessageHeader)
@@ -134,7 +127,6 @@ func RunStateMachine() error {
 				nextMenuText = mainMenuText
 				nextMenuOptions = mainMenuOptions
 				nextMenuOptionsTexts = mainMenuOptionsTexts
-				continue
 			}
 
 		case changeKeyOptionText:
@@ -153,7 +145,6 @@ func RunStateMachine() error {
 					fmt.Printf(failureMessageHeader)
 					fmt.Printf("Auth URL Failed, So I Could Not Check User Key. Please Verify Auth URL\n%v\n\n", accessErr)
 					fmt.Printf(failureMessageFooter)
-					continue
 				case typeCredentails:
 					// MyConfig.SwiftAuthKey = prevAuthKey
 					fmt.Printf("Swift User Key To %v\n", confMap["Agent"]["SwiftAuthKey"][0])
@@ -162,7 +153,6 @@ func RunStateMachine() error {
 					fmt.Printf(failureMessageHeader)
 					fmt.Printf("Auth URL Works, But I Got An Error Trying To Login With Credentails\nUser: %v\nKey: %v\n%v\n\n", confMap["Agent"]["SwiftAuthUser"][0], userResponse, accessErr)
 					fmt.Printf(failureMessageFooter)
-					continue
 				case typeAccount:
 					fmt.Printf(needMoreInfoMessageHeader)
 					fmt.Printf("Auth URL And Credentials Works, But I Could Not Gain Access To Account %v. Please Verify The Account Exists And User %v Has The Correct Access Permissions\n%v\n\n", confMap["Agent"]["SwiftAccountName"][0], confMap["Agent"]["SwiftAuthUser"][0], accessErr)
@@ -171,7 +161,6 @@ func RunStateMachine() error {
 					SaveCurrentConfig()
 					fmt.Println("Changes Saved To File")
 					fmt.Printf(needMoreInfoMessageFooter)
-					continue
 				}
 			} else {
 				fmt.Printf(successMessageHeader)
@@ -184,7 +173,6 @@ func RunStateMachine() error {
 				nextMenuText = mainMenuText
 				nextMenuOptions = mainMenuOptions
 				nextMenuOptionsTexts = mainMenuOptionsTexts
-				continue
 			}
 
 		case changeAccountOptionText:
@@ -203,19 +191,16 @@ func RunStateMachine() error {
 					fmt.Printf(failureMessageHeader)
 					fmt.Printf("Auth URL Failed, So I Could Not Check User Key. Please Verify Auth URL\n%v\n\n", accessErr)
 					fmt.Printf(failureMessageFooter)
-					continue
 				case typeCredentails:
 					confMap["Agent"]["SwiftAccountName"][0] = prevAccountName
 					fmt.Printf(failureMessageHeader)
 					fmt.Printf("Auth URL Works, But I Got An Error Trying To Login With Credentails\nUser: %v\nKey: %v\n%v\n\n", confMap["Agent"]["SwiftAuthUser"][0], confMap["Agent"]["SwiftAuthKey"][0], accessErr)
 					fmt.Printf(failureMessageFooter)
-					continue
 				case typeAccount:
 					confMap["Agent"]["SwiftAccountName"][0] = prevAccountName
 					fmt.Printf(failureMessageHeader)
 					fmt.Printf("Auth URL And Credentials Works, But I Could Not Gain Access To Account %v. Please Verify The Account Exists And User %v Has The Correct Access Permissions\n%v\n\n", confMap["Agent"]["SwiftAccountName"][0], confMap["Agent"]["SwiftAuthUser"][0], accessErr)
 					fmt.Printf(failureMessageFooter)
-					continue
 				}
 			} else {
 				fmt.Printf(successMessageHeader)
@@ -228,16 +213,12 @@ func RunStateMachine() error {
 				nextMenuText = mainMenuText
 				nextMenuOptions = mainMenuOptions
 				nextMenuOptionsTexts = mainMenuOptionsTexts
-				continue
 			}
 
 		default:
 			fmt.Printf("got unknown response: %v\n", menuResponse)
-			continue
 		}
 	}
-	fmt.Println("State machine exiting")
-	return nil
 }
 
 func FirstTimeRun() error {
@@ -278,9 +259,21 @@ func FirstTimeRun() error {
 	}
 
 	fmt.Println(firstTimeCredentialsMenu)
-	userURLResponse, userURLInputErr := getValueFromUser("Swift Auth URL", authURLHint, "")
-	if nil != userURLInputErr {
-		return fmt.Errorf("Error Reading Auth URL From User\n%v", userURLInputErr)
+	mySwiftParams := new(SwiftParams)
+	validAuthURL := false
+	for !validAuthURL {
+		userURLResponse, userURLInputErr := getValueFromUser("Swift Auth URL", authURLHint, "")
+		if nil != userURLInputErr {
+			return fmt.Errorf("Error Reading Auth URL From User\n%v", userURLInputErr)
+		}
+		mySwiftParams.AuthURL = userURLResponse
+		userURLValidateErr := validateURL(mySwiftParams)
+		if nil != userURLValidateErr {
+			fmt.Printf("\n\t*** %v ***\n\n", userURLValidateErr)
+		} else {
+			confMap["Agent"]["SwiftAuthURL"][0] = userURLResponse
+			validAuthURL = true
+		}
 	}
 
 	userUserResponse, userUserInputErr := getValueFromUser("Swift Auth User", usernameHint, "")
@@ -298,21 +291,19 @@ func FirstTimeRun() error {
 		return fmt.Errorf("Error Reading Swift Account From User\n%v", userAccountInputErr)
 	}
 
-	confMap["Agent"]["SwiftAccountName"][0] = userAccountResponse
+	var suggestedMountPath = fmt.Sprintf("%v/vol_%v", defaultMountPath, userAccountResponse)
+	confMap["Agent"]["LogFilePath"][0] = fmt.Sprintf("%v/log.%v", defaultLogPath, userAccountResponse)
+
 	volNameResponse, volNameInputErr := getValueFromUser("Volume Name", volNameHint, confMap["Agent"]["SwiftAccountName"][0])
 	if nil != volNameInputErr {
 		return fmt.Errorf("Error Reading Volume Name From User\n%v", volNameInputErr)
 	}
 
-	var suggestedMountPath = fmt.Sprintf("%v/%v", defaultMountPath, userAccountResponse)
-	var suggestedLogPath = fmt.Sprintf("%v/%v", defaultLogPath, userAccountResponse)
-
-	mountPathResponse, mountPathInputErr := getValueFromUser("Mount Point", "", suggestedMountPath)
+	mountPathResponse, mountPathInputErr := getValueFromUser("Mount Point", mountPointHint, suggestedMountPath)
 	if nil != mountPathInputErr {
 		return fmt.Errorf("Error Reading Mount Path From User\n%v", mountPathInputErr)
 	}
 
-	confMap["Agent"]["SwiftAuthURL"][0] = userURLResponse
 	confMap["Agent"]["SwiftAuthUser"][0] = userUserResponse
 	confMap["Agent"]["SwiftAuthKey"][0] = userKeyResponse
 	confMap["Agent"]["SwiftAccountName"][0] = userAccountResponse
@@ -321,12 +312,11 @@ func FirstTimeRun() error {
 	} else {
 		confMap["Agent"]["FUSEMountPointPath"][0] = suggestedMountPath
 	}
-	fmt.Printf("volNameResponse: %v,\n", volNameResponse)
 	if len(volNameResponse) > 0 {
 		confMap["Agent"]["FUSEVolumeName"][0] = volNameResponse
 	}
 
-	confMap["Agent"]["LogFilePath"][0] = suggestedLogPath
+	// confMap["Agent"]["LogFilePath"][0] = suggestedLogPath
 
 	whatFailed, accessErr := ValidateAccess()
 	if nil != accessErr {

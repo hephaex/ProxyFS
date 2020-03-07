@@ -29,6 +29,7 @@ This menu lets you set the access parameters.
 	changeUsernameOptionText  = "Change Username"
 	changeKeyOptionText       = "Change User Key"
 	changeAccountOptionText   = "Change Account"
+	changeMountOptionText     = "Change Mount Point"
 	successMessageHeader      = "\n\n++++++++++++++++++++++++++    SUCCESS    ++++++++++++++++++++++++++\n\n"
 	successMessageFooter      = "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n"
 	failureMessageHeader      = "\n\n**************************     ERROR     **************************\n\n"
@@ -40,6 +41,7 @@ This menu lets you set the access parameters.
 	keyHint                   = "A Valid Key (Password) For The SwiftStack Cluster User"
 	accountHint               = "The Account To Log Into. Usually In This Form: AUTH_xxxx"
 	volNameHint               = "The Name For This Volume .This Will Be Used To Identify This Configuration, As Well As The Mount Point And Log File"
+	mountPointHint            = "The Mount Point For This Volume"
 )
 
 var (

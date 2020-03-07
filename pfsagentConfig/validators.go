@@ -41,7 +41,7 @@ func ValidateAccess() (errorType int, err error) {
 
 func validateURL(mySwiftParams *SwiftParams) error {
 	parts := strings.Split(mySwiftParams.AuthURL, "/")
-	if len(parts) < 4 {
+	if len(parts) < 5 {
 		return fmt.Errorf(`
 Auth URL should be of the form:
 <protocol>://<url>/auth/v<API version>
@@ -88,9 +88,9 @@ where
 	}
 
 	authClient := &http.Client{}
-	authTokenRequest, tokenErr := http.NewRequest("GET", mySwiftParams.AuthURL, nil)
-	if nil != tokenErr {
-		fmt.Printf("tokenErr:\n%v\n", tokenErr)
+	authTokenRequest, authTokenErr := http.NewRequest("GET", mySwiftParams.AuthURL, nil)
+	if nil != authTokenErr {
+		fmt.Printf("Error Creting Auth Request:\n%v\n", authTokenErr)
 	}
 	authURLResponse, authURLErr := authClient.Do(authTokenRequest)
 	if nil != authURLErr {
