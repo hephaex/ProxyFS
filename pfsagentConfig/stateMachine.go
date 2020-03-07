@@ -263,57 +263,96 @@ func FirstTimeRun() error {
 	validAuthURL := false
 	for !validAuthURL {
 		userURLResponse, userURLInputErr := getValueFromUser("Swift Auth URL", authURLHint, "")
+		fmt.Println()
 		if nil != userURLInputErr {
 			return fmt.Errorf("Error Reading Auth URL From User\n%v", userURLInputErr)
 		}
 		mySwiftParams.AuthURL = userURLResponse
 		userURLValidateErr := validateURL(mySwiftParams)
 		if nil != userURLValidateErr {
-			fmt.Printf("\n\t*** %v ***\n\n", userURLValidateErr)
+			fmt.Printf(failureMessageHeader)
+			fmt.Printf("%v\n\n", userURLValidateErr)
+			fmt.Printf(failureMessageFooter)
 		} else {
 			confMap["Agent"]["SwiftAuthURL"][0] = userURLResponse
 			validAuthURL = true
 		}
 	}
 
-	userUserResponse, userUserInputErr := getValueFromUser("Swift Auth User", usernameHint, "")
-	if nil != userUserInputErr {
-		return fmt.Errorf("Error Reading Auth User From User\n%v", userUserInputErr)
+	validCreds := false
+	for !validCreds {
+		userUserResponse, userUserInputErr := getValueFromUser("Swift Auth User", usernameHint, "")
+		fmt.Println()
+		if nil != userUserInputErr {
+			return fmt.Errorf("Error Reading Auth User From User\n%v", userUserInputErr)
+		}
+
+		userKeyResponse, userKeyInputErr := getValueFromUser("Swift Auth Key", keyHint, "")
+		fmt.Println()
+		if nil != userKeyInputErr {
+			return fmt.Errorf("Error Reading Auth Key From User\n%v", userKeyInputErr)
+		}
+		mySwiftParams.User = userUserResponse
+		mySwiftParams.Key = userKeyResponse
+
+		token, credValidationErr := validateCredentails(mySwiftParams)
+		if nil != credValidationErr {
+			fmt.Printf(failureMessageHeader)
+			fmt.Printf("%v\n\n", credValidationErr)
+			fmt.Printf(failureMessageFooter)
+		} else {
+			confMap["Agent"]["SwiftAuthUser"][0] = userUserResponse
+			confMap["Agent"]["SwiftAuthKey"][0] = userKeyResponse
+			mySwiftParams.AuthToken = token
+			validCreds = true
+		}
 	}
 
-	userKeyResponse, userKeyInputErr := getValueFromUser("Swift Auth Key", keyHint, "")
-	if nil != userKeyInputErr {
-		return fmt.Errorf("Error Reading Auth Key From User\n%v", userKeyInputErr)
+	validAccount := false
+	for !validAccount {
+		confMap["Agent"]["SwiftAccountName"][0] = fmt.Sprintf("AUTH_%v", confMap["Agent"]["SwiftAuthUser"][0])
+
+		userAccountResponse, userAccountInputErr := getValueFromUser("Swift Account", accountHint, confMap["Agent"]["SwiftAccountName"][0])
+		fmt.Println()
+		if nil != userAccountInputErr {
+			return fmt.Errorf("Error Reading Swift Account From User\n%v", userAccountInputErr)
+		}
+		if len(userAccountResponse) == 0 {
+			userAccountResponse = confMap["Agent"]["SwiftAccountName"][0]
+		}
+
+		mySwiftParams.Account = userAccountResponse
+		accountValidationErr := validateAccount(mySwiftParams)
+		if nil != accountValidationErr {
+			fmt.Printf(failureMessageHeader)
+			fmt.Printf("%v\n\n", accountValidationErr)
+			fmt.Printf(failureMessageFooter)
+		} else {
+			confMap["Agent"]["SwiftAccountName"][0] = userAccountResponse
+			validAccount = true
+		}
+
 	}
 
-	userAccountResponse, userAccountInputErr := getValueFromUser("Swift Account", accountHint, "")
-	if nil != userAccountInputErr {
-		return fmt.Errorf("Error Reading Swift Account From User\n%v", userAccountInputErr)
-	}
-
-	var suggestedMountPath = fmt.Sprintf("%v/vol_%v", defaultMountPath, userAccountResponse)
-	confMap["Agent"]["LogFilePath"][0] = fmt.Sprintf("%v/log.%v", defaultLogPath, userAccountResponse)
+	confMap["Agent"]["FUSEMountPointPath"][0] = fmt.Sprintf("%v/vol_%v", defaultMountPath, confMap["Agent"]["SwiftAccountName"][0])
+	confMap["Agent"]["LogFilePath"][0] = fmt.Sprintf("%v/log.%v", defaultLogPath, confMap["Agent"]["SwiftAccountName"][0])
 
 	volNameResponse, volNameInputErr := getValueFromUser("Volume Name", volNameHint, confMap["Agent"]["SwiftAccountName"][0])
+	fmt.Println()
 	if nil != volNameInputErr {
 		return fmt.Errorf("Error Reading Volume Name From User\n%v", volNameInputErr)
 	}
+	if len(volNameResponse) > 0 {
+		confMap["Agent"]["FUSEVolumeName"][0] = volNameResponse
+	}
 
-	mountPathResponse, mountPathInputErr := getValueFromUser("Mount Point", mountPointHint, suggestedMountPath)
+	mountPathResponse, mountPathInputErr := getValueFromUser("Mount Point", mountPointHint, confMap["Agent"]["FUSEMountPointPath"][0])
+	fmt.Println()
 	if nil != mountPathInputErr {
 		return fmt.Errorf("Error Reading Mount Path From User\n%v", mountPathInputErr)
 	}
-
-	confMap["Agent"]["SwiftAuthUser"][0] = userUserResponse
-	confMap["Agent"]["SwiftAuthKey"][0] = userKeyResponse
-	confMap["Agent"]["SwiftAccountName"][0] = userAccountResponse
 	if len(mountPathResponse) > 0 {
 		confMap["Agent"]["FUSEMountPointPath"][0] = mountPathResponse
-	} else {
-		confMap["Agent"]["FUSEMountPointPath"][0] = suggestedMountPath
-	}
-	if len(volNameResponse) > 0 {
-		confMap["Agent"]["FUSEVolumeName"][0] = volNameResponse
 	}
 
 	// confMap["Agent"]["LogFilePath"][0] = suggestedLogPath
