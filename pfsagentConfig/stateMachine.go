@@ -2,7 +2,6 @@ package pfsagentConfig
 
 import (
 	"fmt"
-	"log"
 	"os"
 )
 
@@ -258,61 +257,49 @@ func FirstTimeRun() error {
 
 	if len(confMap["Agent"]["SwiftAuthURL"]) > 0 {
 		oldAuthURL = confMap["Agent"]["SwiftAuthURL"][0]
-		log.Printf("past %v\n", oldAuthURL)
 	}
 	if len(confMap["Agent"]["SwiftAuthUser"]) > 0 {
 		oldAuthUser = confMap["Agent"]["SwiftAuthUser"][0]
-		log.Printf("past %v\n", oldAuthUser)
 	}
 	if len(confMap["Agent"]["SwiftAuthKey"]) > 0 {
 		oldAuthKey = confMap["Agent"]["SwiftAuthKey"][0]
-		log.Printf("past %v\n", oldAuthKey)
 	}
 	if len(confMap["Agent"]["SwiftAccountName"]) > 0 {
 		oldAccount = confMap["Agent"]["SwiftAccountName"][0]
-		log.Printf("past %v\n", oldAccount)
 	}
 	if len(confMap["Agent"]["FUSEMountPointPath"]) > 0 {
 		oldMount = confMap["Agent"]["FUSEMountPointPath"][0]
-		log.Printf("past %v\n", oldMount)
 	}
 	if len(confMap["Agent"]["FUSEVolumeName"]) > 0 {
 		oldVolName = confMap["Agent"]["FUSEVolumeName"][0]
-		log.Printf("past %v\n", oldVolName)
 	}
 	if len(confMap["Agent"]["LogFilePath"]) > 0 {
 		oldLogPath = confMap["Agent"]["LogFilePath"][0]
-		log.Printf("past %v\n", oldLogPath)
 	}
 
-	confMap["Agent"]["LogFilePath"][0] = "ff"
-
-	SaveCurrentConfig()
-
-	fmt.Printf("conf map:\n%v\n", confMap)
-
 	fmt.Println(firstTimeCredentialsMenu)
-	userURLResponse, userURLInputErr := getValueFromUser("Swift Auth URL", "", "")
+	userURLResponse, userURLInputErr := getValueFromUser("Swift Auth URL", authURLHint, "")
 	if nil != userURLInputErr {
 		return fmt.Errorf("Error Reading Auth URL From User\n%v", userURLInputErr)
 	}
 
-	userUserResponse, userUserInputErr := getValueFromUser("Swift Auth User", "", "")
+	userUserResponse, userUserInputErr := getValueFromUser("Swift Auth User", usernameHint, "")
 	if nil != userUserInputErr {
 		return fmt.Errorf("Error Reading Auth User From User\n%v", userUserInputErr)
 	}
 
-	userKeyResponse, userKeyInputErr := getValueFromUser("Swift Auth Key", "", "")
+	userKeyResponse, userKeyInputErr := getValueFromUser("Swift Auth Key", keyHint, "")
 	if nil != userKeyInputErr {
 		return fmt.Errorf("Error Reading Auth Key From User\n%v", userKeyInputErr)
 	}
 
-	userAccountResponse, userAccountInputErr := getValueFromUser("Swift Account", "", "")
+	userAccountResponse, userAccountInputErr := getValueFromUser("Swift Account", accountHint, "")
 	if nil != userAccountInputErr {
 		return fmt.Errorf("Error Reading Swift Account From User\n%v", userAccountInputErr)
 	}
 
-	volNameResponse, volNameInputErr := getValueFromUser("Volume Name", "", userAccountResponse)
+	confMap["Agent"]["SwiftAccountName"][0] = userAccountResponse
+	volNameResponse, volNameInputErr := getValueFromUser("Volume Name", volNameHint, confMap["Agent"]["SwiftAccountName"][0])
 	if nil != volNameInputErr {
 		return fmt.Errorf("Error Reading Volume Name From User\n%v", volNameInputErr)
 	}
@@ -334,9 +321,8 @@ func FirstTimeRun() error {
 	} else {
 		confMap["Agent"]["FUSEMountPointPath"][0] = suggestedMountPath
 	}
+	fmt.Printf("volNameResponse: %v,\n", volNameResponse)
 	if len(volNameResponse) > 0 {
-		confMap["Agent"]["FUSEVolumeName"][0] = userAccountResponse
-	} else {
 		confMap["Agent"]["FUSEVolumeName"][0] = volNameResponse
 	}
 
@@ -371,14 +357,12 @@ func FirstTimeRun() error {
 		}
 	} else {
 		fmt.Printf(successMessageHeader)
-		fmt.Printf("All Access Checks Succeeded")
+		fmt.Println("All Access Checks Succeeded")
 
 		if _, err := os.Stat(confMap["Agent"]["LogFilePath"][0]); os.IsNotExist(err) {
 			err = os.MkdirAll(confMap["Agent"]["LogFilePath"][0], 0755)
 			if err != nil {
 				fmt.Printf(failureMessageHeader)
-				// fmt.Printf(authURLFailedMessage, accessErr)
-				fmt.Printf(failureMessageFooter)
 				panic(err)
 			}
 		}
@@ -387,8 +371,6 @@ func FirstTimeRun() error {
 			err = os.MkdirAll(confMap["Agent"]["FUSEMountPointPath"][0], 0755)
 			if err != nil {
 				fmt.Printf(failureMessageHeader)
-				// fmt.Printf(authURLFailedMessage, accessErr)
-				fmt.Printf(failureMessageFooter)
 				panic(err)
 			}
 		}

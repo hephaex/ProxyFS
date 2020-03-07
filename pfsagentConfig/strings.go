@@ -35,6 +35,11 @@ This menu lets you set the access parameters.
 	failureMessageFooter      = "\n*******************************************************************\n\n"
 	needMoreInfoMessageHeader = "\n\n//////////////////////////   ATTENTION   //////////////////////////\n\n"
 	needMoreInfoMessageFooter = "\n///////////////////////////////////////////////////////////////////\n\n"
+	authURLHint               = "The Auth URL Is Used To Authenticate And Get An Auth Token"
+	usernameHint              = "A Valid User For The SwiftStack Cluster"
+	keyHint                   = "A Valid Key (Password) For The SwiftStack Cluster User"
+	accountHint               = "The Account To Log Into. Usually In This Form: AUTH_xxxx"
+	volNameHint               = "The Name For This Volume .This Will Be Used To Identify This Configuration, As Well As The Mount Point And Log File"
 )
 
 var (
